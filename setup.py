@@ -7,7 +7,7 @@ from xml.etree.ElementTree import ElementTree
 try:
     root = ElementTree(None, 'stack.xml')
     version = root.findtext('version')
-except Exception, e:
+except Exception as e:
     print >> sys.stderr, 'Could not extract version from your stack.xml:\n%s' % e
     sys.exit(-1)
 
