@@ -47,13 +47,18 @@ from . names import is_legal_resource_name, is_legal_resource_base_name, package
 #TODOXXX: unit test
 def bare_msg_type(msg_type):
     """
-    Compute the bare data type, e.g. for arrays, get the underlying array item type
+    Compute the bare data type, e.g. for arrays, and optionals get the underlying array item type
     
     :param msg_type: ROS msg type (e.g. 'std_msgs/String'), ``str``
     :returns: base type, ``str``
     """
     if msg_type is None:
         return None
+    
+    # Strip Optional
+    if msg_type[:9] == 'Optional[' and  msg_type[-1] == ']':
+        msg_type = msg_type[9:-1]
+
     if '[' in msg_type:
         return msg_type[:msg_type.find('[')]
     return msg_type
@@ -94,21 +99,29 @@ def parse_type(msg_type):
     """
     if not msg_type:
         raise ValueError("Invalid empty type")
+    
+    if msg_type[:9] == 'Optional[':
+        assert msg_type[-1] == ']', f'Optional type, {msg_type}, must end in closed square bracket.'
+        is_optional = True
+        msg_type = msg_type[9:-1]
+    else:
+        is_optional = False
+    
     if '[' in msg_type:
         var_length = msg_type.endswith('[]')
         splits = msg_type.split('[')
         if len(splits) > 2:
             raise ValueError("Currently only support 1-dimensional array types: %s"%msg_type)
         if var_length:
-            return msg_type[:-2], True, None
+            return msg_type[:-2], True, None, is_optional
         else:
             try:
                 length = int(splits[1][:-1])
-                return splits[0], True, length
+                return splits[0], True, length, is_optional
             except ValueError:
                 raise ValueError("Invalid array dimension: [%s]"%splits[1][:-1])
     else:
-        return msg_type, False, None
+        return msg_type, False, None, is_optional
    
 ################################################################################
 # name validation 
@@ -117,6 +130,12 @@ def is_valid_msg_type(x):
     """
     :returns: True if the name is a syntatically legal message type name, ``bool``
     """
+    if x[:9] == 'Optional[' and x[-1] != ']':
+        #'Optional types must end in closed square bracket.'
+        return False
+    elif x[:9] == 'Optional[' and x[-1] == ']':
+        x = x[9:-1]
+ 
     if not x or len(x) != len(x.strip()):
         return False
     base = bare_msg_type(x)
@@ -211,7 +230,7 @@ class Field(object):
     def __init__(self, name, type):
         self.name = name
         self.type = type
-        (self.base_type, self.is_array, self.array_len) = parse_type(type)
+        (self.base_type, self.is_array, self.array_len, self.is_optional) = parse_type(type)
         self.is_header = is_header_type(self.type)
         self.is_builtin = is_builtin(self.base_type)
 

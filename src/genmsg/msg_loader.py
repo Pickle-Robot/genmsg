@@ -226,6 +226,10 @@ def _load_field_line(orig_line, package_context):
     if package_context and not SEP in field_type:
         if field_type == HEADER:
             field_type = HEADER_FULL_NAME
+        elif field_type[:9] == 'Optional[' and  field_type[-1] == ']':
+            # TODO reorganize this logic
+            if not is_builtin(bare_msg_type(field_type)):
+                field_type = "Optional[%s/%s]"%(package_context, field_type)
         elif not is_builtin(bare_msg_type(field_type)):
             field_type = "%s/%s"%(package_context, field_type)
     elif field_type == HEADER:
