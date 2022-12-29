@@ -229,7 +229,7 @@ def _load_field_line(orig_line, package_context):
         elif field_type[:9] == 'Optional[' and  field_type[-1] == ']':
             # TODO reorganize this logic
             if not is_builtin(bare_msg_type(field_type)):
-                field_type = "Optional[%s/%s]"%(package_context, field_type)
+                field_type = "Optional[%s/%s]"%(package_context, bare_msg_type(field_type))
         elif not is_builtin(bare_msg_type(field_type)):
             field_type = "%s/%s"%(package_context, field_type)
     elif field_type == HEADER:
@@ -239,7 +239,7 @@ def _load_field_line(orig_line, package_context):
 def _strip_comments(line):
     return line.split(COMMENTCHAR)[0].strip() #strip comments
     
-def load_msg_from_string(msg_context, text, full_name):
+def load_msg_from_string(msg_context, text, full_name) -> MsgSpec:
     """
     Load message specification from a string.
 
@@ -269,7 +269,7 @@ def load_msg_from_string(msg_context, text, full_name):
     msg_context.register(full_name, spec)
     return spec
 
-def load_msg_from_file(msg_context, file_path, full_name):
+def load_msg_from_file(msg_context, file_path, full_name) -> MsgSpec:
     """
     Convert the .msg representation in the file to a :class:`MsgSpec` instance.
 
