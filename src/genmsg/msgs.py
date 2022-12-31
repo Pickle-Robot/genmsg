@@ -119,7 +119,7 @@ def parse_type(msg_type):
                 length = int(splits[1][:-1])
                 return splits[0], True, length, is_optional
             except ValueError:
-                raise ValueError("Invalid array dimension: [%s]"%splits[1][:-1])
+                raise ValueError(f"Invalid array dimension in message type {msg_type} : [{splits[1][:-1]}]")
     else:
         return msg_type, False, None, is_optional
    
