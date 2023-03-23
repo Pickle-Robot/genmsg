@@ -100,7 +100,7 @@ def _compute_hash(msg_context, spec, hash):
     # accumulate the hash
     # - root file
     if isinstance(spec, MsgSpec):
-        hash.update(compute_md5_text(msg_context, spec))
+         hash.update(compute_md5_text(msg_context, spec).encode('utf-8'))
     elif isinstance(spec, SrvSpec):
         hash.update(compute_md5_text(msg_context, spec.request))
         hash.update(compute_md5_text(msg_context, spec.response))        
